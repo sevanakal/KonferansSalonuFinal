@@ -14,7 +14,7 @@ public partial class Seat
     /// <summary>
     /// 1-armchair, 2-chair, 3-table, 4-rectangletable, 5-stage
     /// </summary>
-    public int? Type { get; set; }
+    public string Type { get; set; }
 
     public double X { get; set; }
 
