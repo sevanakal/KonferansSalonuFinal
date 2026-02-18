@@ -1,0 +1,143 @@
+﻿@page "/"
+@using KonferansSalonu.Models
+@inject ConferencedbContext DbContext
+
+<PageTitle>Dashboard - Konferans YP</PageTitle>
+
+<div class="container-fluid p-0">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold text-dark">👋 Hoş Geldin, Admin</h3>
+            <p class="text-muted mb-0">Bugünkü sistem durum özeti aşağıdadır.</p>
+        </div>
+        <div class="d-none d-md-block">
+            <span class="badge bg-light text-dark border p-2">
+                <i class="bi bi-calendar-event me-1"></i> @DateTime.Now.ToString("dd MMMM yyyy, dddd")
+            </span>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card shadow-sm border-0 border-start border-4 border-primary h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="text-muted small text-uppercase fw-bold">Toplam Salon</span>
+                            <h2 class="mb-0 fw-bold text-dark">8</h2>
+                        </div>
+                        <div class="bg-primary bg-opacity-10 text-primary rounded-circle p-3">
+                            <i class="bi bi-building fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card shadow-sm border-0 border-start border-4 border-success h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="text-muted small text-uppercase fw-bold">Anlık Kapasite</span>
+                            <h2 class="mb-0 fw-bold text-dark">1,250</h2>
+                        </div>
+                        <div class="bg-success bg-opacity-10 text-success rounded-circle p-3">
+                            <i class="bi bi-people fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card shadow-sm border-0 border-start border-4 border-warning h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="text-muted small text-uppercase fw-bold">Bugünkü Etkinlik</span>
+                            <h2 class="mb-0 fw-bold text-dark">3</h2>
+                        </div>
+                        <div class="bg-warning bg-opacity-10 text-warning rounded-circle p-3">
+                            <i class="bi bi-ticket-perforated fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card shadow-sm border-0 border-start border-4 border-danger h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="text-muted small text-uppercase fw-bold">Arızalı Koltuk</span>
+                            <h2 class="mb-0 fw-bold text-dark">12</h2>
+                        </div>
+                        <div class="bg-danger bg-opacity-10 text-danger rounded-circle p-3">
+                            <i class="bi bi-exclamation-triangle fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-12 col-lg-8">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white py-3">
+                    <h5 class="card-title mb-0 fw-bold">Son Aktiviteler (Audit Log)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                            <div class="d-flex align-items-center">
+                                <span class="badge bg-primary rounded-pill me-3">Login</span>
+                                <div>
+                                    <h6 class="mb-0">Admin sisteme giriş yaptı.</h6>
+                                    <small class="text-muted">IP: 192.168.1.10</small>
+                                </div>
+                            </div>
+                            <small class="text-muted">10 dk önce</small>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                            <div class="d-flex align-items-center">
+                                <span class="badge bg-success rounded-pill me-3">Create</span>
+                                <div>
+                                    <h6 class="mb-0">Yeni salon eklendi: "VIP Toplantı"</h6>
+                                    <small class="text-muted">Kapasite: 50</small>
+                                </div>
+                            </div>
+                            <small class="text-muted">1 saat önce</small>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                            <div class="d-flex align-items-center">
+                                <span class="badge bg-danger rounded-pill me-3">Error</span>
+                                <div>
+                                    <h6 class="mb-0">Veritabanı bağlantısı koptu.</h6>
+                                    <small class="text-muted">Otomatik yeniden bağlandı.</small>
+                                </div>
+                            </div>
+                            <small class="text-muted">3 saat önce</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-lg-4">
+            <div class="card shadow-sm border-0 bg-dark text-white h-100">
+                <div class="card-body p-4 d-flex flex-column justify-content-center align-items-center text-center">
+                    <i class="bi bi-lightning-charge-fill display-1 mb-3 text-warning"></i>
+                    <h3>Hızlı İşlemler</h3>
+                    <p class="text-white-50">Sık kullanılan menülere buradan ulaşabilirsiniz.</p>
+                    <div class="d-grid gap-2 w-100 mt-3">
+                        <button class="btn btn-light fw-bold"><i class="bi bi-plus-lg me-2"></i>Yeni Etkinlik Oluştur</button>
+                        <button class="btn btn-outline-light"><i class="bi bi-file-earmark-pdf me-2"></i>Rapor Al</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

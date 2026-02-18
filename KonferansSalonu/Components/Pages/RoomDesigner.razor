@@ -1,0 +1,187 @@
+﻿@page "/room-designer/{SectionId:int}"
+@using KonferansSalonu.Services
+@rendermode InteractiveServer
+
+
+
+<PageTitle>Kroki Tasarımı</PageTitle>
+
+<div class="d-flex overflow-hidden bg-light" style="margin: -1.5rem; height: calc(100vh - 70px); outline:none;" tabindex="0"
+     @onmouseup="StopDrag"
+     @onmousemove="OnMouseMove"
+     @onkeydown="HandleKeyDown">
+
+    <div class="bg-white border-end shadow-sm d-flex flex-column flex-shrink-0" style="width: 250px; z-index: 20;">
+        <div class="p-3 border-bottom bg-dark text-white">
+            <h6 class="mb-0 fw-bold"><i class="bi bi-tools me-2"></i>Araç Kutusu</h6>
+        </div>
+
+        <div class="p-3 overflow-auto">
+            <small class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">Oturma Birimleri</small>
+            <div class="d-grid gap-2 mt-2">
+                <button class="btn btn-outline-secondary text-start" @onclick='() => AddItem("armchair")'>
+                    <i class="bi bi-square-fill me-2"></i> Koltuk
+                </button>
+                <button class="btn btn-outline-secondary text-start" @onclick='() => AddItem("chair")'>
+                    <i class="bi bi-plus-square me-2"></i> Sandalye
+                </button>
+                <button class="btn btn-outline-secondary text-start" @onclick='() => AddItem("table")'>
+                    <i class="bi bi-circle-fill me-2"></i> Yuvarlak Masa
+                </button>
+                <button class="btn btn-outline-secondary text-start" @onclick='() => AddItem("rectangletable")'>
+                    <i class="bi bi-aspect-ratio me-2"></i> Diktörtken Masa
+                </button>
+                <button class="btn btn-outline-secondary text-start" @onclick='() => AddItem("stage")'>
+                    <i class="bi bi-display me-2"></i> Sahne / Podyum
+                </button>
+            </div>
+            <small class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">Yerleşimi Kitle</small>
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" checked="@(dragPanControl ? "checked" : null)" @onchange="DragPanToggle">
+            </div>
+            
+
+        </div>
+
+        @if (SelectedItem != null)
+        {
+            <div class="p-3 border-bottom bg-primary text-white">
+                <h6 class="mb-0 fw-bold"><i class="bi bi-tools me-2"></i>Özel Araçlar</h6>
+            </div>
+            <div class="p-3 overflow-auto">
+                <div class="d-grid gap-2 mt-2">
+                    <label class="form-label small fw-bold d-flex justify-content-between">
+                        <span>Açı (Döndür)</span>
+                        <span>@(SelectedItem.Rotation)°</span>
+                    </label>
+                    <input type="range" class="form-range" min="0" max="360" step="5" @bind="SelectedItem.Rotation" @bind:event="oninput" />
+                </div>
+                @if (SelectedItem.IsResize)
+                {
+                    <div class="d-grid gap-2 mt-2">
+                        <label class="form-label small fw-bold d-flex justify-content-between">
+                            <span>Buyut</span>
+                            <span>@(SelectedItem.ScalePercentage)%</span>
+                        </label>
+                        <input type="range" class="form-range" min="0" max="100" step="5" value="@SelectedItem.ScalePercentage" @oninput="ScalePercentage" />
+                    </div>
+                }
+            </div>
+        }
+        
+
+        <div class="p-3 border-top bg-light">
+            <button class="btn btn-success w-100 mb-2" @onclick="AddSeats"><i class="bi bi-save me-2"></i>Kaydet</button>
+            <button class="btn btn-outline-danger w-100" @onclick="GoBack"><i class="bi bi-x-lg me-2"></i>Kapat</button>
+        </div>
+    </div>
+
+    <div id="designer-canvas" class="flex-grow-1 position-relative overflow-hidden" style="background-color:#333;cursor: @(IsPanning ? "grabbing" : "default")" @onmousedown="StartPan" @onmouseup="StopPan" @onmousemove="OnMouseMove">
+        <div class="world-container workspace-bg" style="transform: translate(@(PanX)px, @(PanY)px); width: 5000px; height: 5000px;">
+            @if (!dragPanControl)
+            {
+                <div class="selectionbox" style="left: @(selectionBox.X)px; top:@(selectionBox.Y)px; width:@(selectionBox.Width)px; height:@(selectionBox.Height)px"></div>
+            }
+            @foreach (var item in DesignItems)
+            {
+                <div class="draggable-item @(item.Type) @(item.IsSelected ? "selected" : "")"
+                     style="left: @(item.X)px; top: @(item.Y)px; transform: rotate(@(item.Rotation)deg); @(item.IsResize ? $"width: {item.Width}px; height: {item.Height}px" : ""); background-color:@(item.Color)"
+                     @onmousedown="e => StartDrag(item, e)"
+                     @onmousedown:stopPropagation>
+                    @if (item.Type == "armchair")
+                    {
+                        <i class="bi bi-square-fill"></i>
+                    }
+                    else if (item.Type == "chair")
+                    {
+                        <i class="bi bi-plus-square" style="color:red;"></i>
+                    }
+                    else if (item.Type == "table")
+                    {
+
+                        <div class="round-table" style="background-color:red;"></div>
+                    }
+                    else if (item.Type == "rectangletable")
+                    {
+                        <span class="rectangletable" style=""></span>
+                    }
+                    else if (item.Type == "stage")
+                    {
+
+                        <span class="stage">SAHNE</span>
+                    }
+
+                    <small class="item-label">@item.Label</small>
+                </div>
+            }
+        </div>
+        
+
+    </div>
+
+    <div class="bg-white border-start shadow-sm flex-shrink-0" style="width: 300px; z-index: 20;">
+        <div class="p-3 border-bottom bg-light">
+            <h6 class="mb-0 fw-bold">Özellikler</h6>
+        </div>
+        <div class="p-3">
+            @if (SelectedItem != null)
+            {
+                <div class="mb-3">
+                    <label class="form-label small">Etiket</label>
+                    <input type="text" class="form-control" @bind="SelectedItem.Label" @bind:event="oninput">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small">X Konumu</label>
+                    <input type="number" class="form-control" @bind="SelectedItem.X">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small">Y Konumu</label>
+                    <input type="number" class="form-control" @bind="SelectedItem.Y">
+                </div>
+                <button class="btn btn-danger w-100 mt-3" @onclick="DeleteItem">
+                    <i class="bi bi-trash me-2"></i> Sil
+                </button>
+            }
+            else
+            {
+                <div class="text-center text-muted py-5">
+                    <i class="bi bi-cursor display-4 opacity-25"></i>
+                    <p class="mt-2">Düzenlemek için bir nesne seçin.</p>
+                </div>
+            }
+        </div>
+        
+        @if (SelectedDesignItems.Count() > 0)
+        {
+
+            <div class="p-3 border-bottom bg-info">
+                <h6 class="mb-0 fw-bold">Grup Belirle</h6>
+            </div>
+            <div class="p-3">
+                <div class="mb-3">
+                    <label class="form-label small">Grup Adı</label>
+                    <input type="text" class="form-control" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small">Renk</label>
+                    <select class="form-select" @bind="SeatGroupColor" @bind:after="OnColorChange">
+                        <option value="">Rengini Seç:</option>
+                        <option value="red">Kırmızı</option>
+                        <option value="blue">Mavi</option>
+                        <option value="green">Yeşil</option>
+                        <option value="yellow">Sarı</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary w-100 mt-3">
+                    <i class="bi bi-database-add me-2"></i> Ekle
+                </button>
+            </div>
+
+
+        }
+    </div>
+    
+</div>
+
+
+

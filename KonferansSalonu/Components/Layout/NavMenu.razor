@@ -1,0 +1,43 @@
+﻿<div class="d-flex flex-column h-100">
+
+    <div class="d-flex align-items-center p-3 text-white text-decoration-none border-bottom border-secondary">
+        <i class="bi bi-cpu-fill fs-3 me-2 text-warning"></i>
+        <span class="fs-5 fw-bold">Konferans YP</span>
+    </div>
+
+    <div class="flex-grow-1 py-3 overflow-auto">
+        <ul class="nav nav-pills flex-column px-2 gap-1">
+
+            <li class="nav-item">
+                <NavLink class="nav-link text-white-50" href="" Match="NavLinkMatch.All">
+                    <i class="bi bi-speedometer2 me-2"></i> Dashboard
+                </NavLink>
+            </li>
+
+            <li class="nav-item">
+                <NavLink class="nav-link text-white-50" href="rooms">
+                    <i class="bi bi-grid-fill me-2"></i> Salonlar
+                </NavLink>
+            </li>
+
+        </ul>
+    </div>
+
+    <div class="p-3 border-top border-secondary mt-auto">
+        <small class="text-white-50">v1.0.0 Beta</small>
+    </div>
+
+</div>
+
+<style>
+    /* Aktif menü rengi ayarı */
+    .nav-pills .nav-link.active {
+        background-color: #0d6efd;
+        color: white !important;
+    }
+
+    .nav-pills .nav-link:hover:not(.active) {
+        background-color: rgba(255,255,255,0.1);
+        color: white !important;
+    }
+</style>

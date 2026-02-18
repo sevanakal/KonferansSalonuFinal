@@ -1,0 +1,259 @@
+﻿@page "/rooms"
+@using KonferansSalonu.Models
+@using KonferansSalonu.Services
+@inject IRoomService RoomService
+@inject IJSRuntime JS
+@inject IClientUiService UiService
+@inject ISectionService SectionService
+@rendermode InteractiveServer
+
+<PageTitle>Salonlar</PageTitle>
+
+<div class="container-fluid p-0">
+
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body p-3">
+            <div class="row g-3 align-items-center">
+                <div class="col-12 col-md-4">
+                    <h4 class="mb-0 fw-bold text-primary">🏢 Salon Listesi</h4>
+                </div>
+                <div class="col-12 col-md-4">
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-search"></i></span>
+                        <input type="text" class="form-control bg-light border-start-0" placeholder="Salon ara...">
+                    </div>
+                </div>
+                <div class="col-12 col-md-4 text-md-end">
+                    <button class="btn btn-primary px-4" data-bs-toggle="modal" data-bs-target="#addRoomModal">
+                        <i class="bi bi-plus-lg me-2"></i>Yeni Salon
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (rooms == null)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-2 text-muted">Salonlar yükleniyor...</p>
+        </div>
+    }
+    else if (rooms.Count == 0)
+    {
+        <div class="text-center py-5 border border-dashed rounded bg-light">
+            <i class="bi bi-inbox display-1 text-muted opacity-25"></i>
+            <h4 class="mt-3 text-muted">Henüz hiç salon eklenmemiş.</h4>
+            <p>Yukarıdaki butonla ilk salonu oluşturabilirsin.</p>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var room in rooms)
+            {
+                <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+                    <div class="card h-100 shadow-sm border-0 card-hover-animate">
+                        <div class="bg-light d-flex align-items-center justify-content-center position-relative" style="height: 160px; border-bottom: 1px solid #eee;">
+                            <i class="bi bi-projector-fill display-4 text-secondary opacity-25"></i>
+                            <span class="position-absolute top-0 end-0 m-2 badge bg-dark">ID: @room.Id</span>
+                        </div>
+
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title fw-bold text-dark mb-0 text-truncate" title="@room.Name">@room.Name</h5>
+
+                                <div class="dropdown">
+                                    <button class="btn btn-link text-muted p-0" data-bs-toggle="dropdown"><i class="bi bi-three-dots-vertical"></i></button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li><button class="dropdown-item text-primary" @onclick="() => OpenSectionModal(room)"><i class="bi bi-plus-circle me-2"></i>Bolum ekle</button></li>
+                                        <li><button class="dropdown-item text-danger" @onclick="() => DeleteRoom(room.Id)"><i class="bi bi-trash me-2"></i>Sil</button></li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <p class="text-muted small mb-3">Kapasite: @room.Capacity Kişi</p>
+
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="badge bg-info bg-opacity-10 text-info border border-info rounded-pill">
+                                    <i class="bi bi-layers me-1"></i> @(room.Sections?.Count ?? 0) Bölüm
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="card-footer bg-white border-top-0 pt-0 pb-3">
+                            @if (room.Sections?.Count() > 0)
+                            {
+                                <div class="dropdown">
+                                    <button class="btn btn-outline-primary dropdown-toggle w-100" type="button" data-bs-toggle="dropdown">
+                                        <i class="bi bi-grid-3x3-gap me-2"></i>Tasarla: Bölüm Seç
+                                    </button>
+                                    <ul class="dropdown-menu w-100 shadow">
+                                        @foreach (var sectionitem in room.Sections)
+                                        {
+                                            <li>
+                                                <a href="/room-designer/@sectionitem.Id" class="dropdown-item d-flex justify-content-between align-items-center">
+                                                    <span>@sectionitem.Name</span>    
+                                                    <span class="badge bg-light text-dark">@sectionitem.Seatgroups.Sum(g=>g.Seats.Count) Kapasite</span>
+                                                </a>
+                                            </li>
+                                        }
+                                    </ul>
+                                </div>
+                            }
+                            else
+                            {
+                                <button class="btn btn-light text-muted w-100" disabled>
+                                    <i class="bi bi-exclamation-circle me-2"></i> Önce Bölüm Ekleyin
+                                </button>
+                            }
+                            
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+<!--Yeni salon olusturma popup-->
+<div class="modal fade" id="addRoomModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Yeni Salon Oluştur</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Salon Adı</label>
+                    <input type="text" class="form-control" @bind="newRoom.Name" placeholder="Örn: Ana Konferans Salonu">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Kapasite (Tahmini)</label>
+                    <input type="number" class="form-control" @bind="newRoom.Capacity">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-primary" @onclick="SaveRoom">Kaydet</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--Yeni bolum olusturma popup-->
+@if (_isSectionModalVisible)
+{
+    <div class="modal fade show" id="addSectionModal" tabindex="-1" style="display: block; background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Salona Yeni Bolum Olustur</h5>
+                    <button type="button" class="btn-close" @onclick="CloseSectionModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Salon Adı</label>
+                        <label class="form-control">@targetRoom.Name</label>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Bolum Adi</label>
+                        <input type="text" class="form-control" @bind="newSection.Name">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseSectionModal">İptal</button>
+                    <button type="button" class="btn btn-primary" @onclick="AddSection">Kaydet</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+@code {
+    // Verileri tutacak listemiz
+    List<Room>? rooms;
+
+    // Yeni eklenecek salon modeli
+    Room newRoom = new Room();
+
+    // Yeni eklenecek bolum modeli
+    private bool _isSectionModalVisible = false;
+    private Room targetRoom = new Room();
+    private Section newSection = new Section();
+    private string? RoomName;
+
+    // Sayfa açılınca çalışır
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadRooms();
+    }
+
+    // Listeyi Servisten Çek
+    async Task LoadRooms()
+    {
+        rooms = await RoomService.GetAllRoomsAsync();
+    }
+
+    // Kaydet Butonu
+    async Task SaveRoom()
+    {
+        if (string.IsNullOrWhiteSpace(newRoom.Name)) return;
+
+        await RoomService.CreateRoomAsync(newRoom);
+
+        // Formu temizle ve listeyi yenile
+        newRoom = new Room();
+        await LoadRooms();
+
+        // Modalı kapat (JS Interop - Küçük bir hile)
+        // Gerçek projede bunu daha şık yaparız ama şimdilik iş görür
+        // "addRoomModal" id'li modalın kapatma butonuna sanal tıklama yapıyoruz :)
+        // Veya kullanıcı elle kapatabilir.
+    }
+
+    // Silme Butonu
+    async Task DeleteRoom(int id)
+    {
+        if (await UiService.ConfirmDelete("Bu salonu silmek istediğinize emin misiniz?"))
+        {
+            await RoomService.DeleteRoomAsync(id);
+
+            await UiService.ShowSuccess("Salon başarılı bir şekilde silindi.");
+
+            await LoadRooms();
+        }
+    }
+
+    async Task OpenSectionModal(Room _room)
+    {
+        _isSectionModalVisible = true;
+        targetRoom = _room;
+        newSection = new Section { Roomid = targetRoom.Id };
+    }
+
+    void CloseSectionModal()
+    {
+        _isSectionModalVisible = false;
+        targetRoom = new Room();
+        newSection = new Section();
+    }
+
+    async Task AddSection()
+    {
+        if (string.IsNullOrWhiteSpace(newSection.Name)) return;
+
+        var result = await SectionService.CreateSectionAsync(newSection);
+        if (result)
+        {
+            await UiService.ShowSuccess("Bölüm başarılı bir şekilde eklendi.");
+            await LoadRooms();
+            CloseSectionModal();
+        }
+        else
+        {
+            await UiService.ShowError("Bölüm eklenirken bir hata oluştu. Lütfen tekrar deneyin.");
+        }
+    }
+}
