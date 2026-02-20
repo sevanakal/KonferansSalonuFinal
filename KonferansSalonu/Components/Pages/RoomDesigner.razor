@@ -188,8 +188,8 @@
                         @foreach (var item in SeatGroups)
                         {
                             <li style="background-color:@item.Color">
-                                <a href="/room-designer/" class="dropdown-item d-flex justify-content-between align-items-center">
-                                    <span>@item.Name</span>
+                                <a @onclick="()=>DeleteSeatGroupView(item)" class="dropdown-item d-flex justify-content-between align-items-center">
+                                    <span class="text-light">@item.Name</span>
                                     <span class="badge bg-light text-dark">@item.Seats.Count() Kapasite</span>
                                 </a>
                             </li>

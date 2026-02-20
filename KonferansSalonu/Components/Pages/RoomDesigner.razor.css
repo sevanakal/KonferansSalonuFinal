@@ -70,3 +70,6 @@
     color: #333;
     white-space: nowrap;
 }
+
+.dropdown-item:hover { background:none; }
+.dropdown-item {text-shadow:0 1px 3px rgba(0,0,0,0.9);}

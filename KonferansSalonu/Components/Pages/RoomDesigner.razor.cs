@@ -429,7 +429,7 @@ namespace KonferansSalonu.Components.Pages
         void OnColorChange() { 
             foreach (var item in SelectedDesignItems)
             {
-                item.Color = SeatGroupColor;
+                item.Color = NewSeatGroup.Color;
             }
         }
 
@@ -442,7 +442,7 @@ namespace KonferansSalonu.Components.Pages
             else
             {
                 // Tasarım verilerinde grup ataması yapılmamış yerler var mı kontrol edelim
-                if (DesignItems.Any(x => x.SeatGroupId == null))
+                if (DesignItems.Any(x => x.SeatGroupId == Guid.Empty))
                 {
                     await ClientUiService.ShowError("Gruplandırması yapılmayan yerler var.");
                 }
@@ -475,12 +475,38 @@ namespace KonferansSalonu.Components.Pages
                 SeatGroupDto AddadSeatGroup = new SeatGroupDto();
                 AddadSeatGroup.Name = NewSeatGroup.Name;
                 AddadSeatGroup.Color = NewSeatGroup.Color;
-                AddadSeatGroup.Seats = SelectedDesignItems;
+                DesignItem addedItem;
+                foreach (var item in SelectedDesignItems)
+                {
+                    addedItem = new DesignItem();
+                    addedItem = item;
+                    AddadSeatGroup.Seats.Add(addedItem);
+                }
+                addedItem = new DesignItem();
                 SeatGroups.Add(AddadSeatGroup);
                 SelectedDesignItems.ForEach(x => x.SeatGroupId = NewSeatGroup.id);
                 SelectedDesignItems.ForEach(x => x.Color = NewSeatGroup.Color);
                 SelectedDesignItems.Clear();
+                DesignItems.ForEach(x => x.IsSelected = false);
                 NewSeatGroup = new SeatGroupDto();
+            }
+        }
+
+        async Task DeleteSeatGroupView(SeatGroupDto seatGroupDto)
+        {
+            if (await ClientUiService.ConfirmDelete($"{seatGroupDto.Name} grubunu silmek istediğinize emin misiniz?"))
+            {
+                
+                foreach (var item in seatGroupDto.Seats)
+                {
+                    var updateSeat = DesignItems.Find(x => x.Id == item.Id);
+                    if (updateSeat!=null)
+                    {
+                        updateSeat.Color = "";
+                        updateSeat.SeatGroupId = Guid.Empty;
+                    }
+                }
+                SeatGroups.Remove(seatGroupDto);
             }
         }
 
