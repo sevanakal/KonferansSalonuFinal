@@ -2,10 +2,12 @@
 {
     public class SeatGroupDto
     {
-        public string id { get; set; }
+        public Guid id { get; set; } = Guid.NewGuid();
         public int SectionId { get; set; }
         public string Name { get; set; }
         public string Color { get; set; }
+
+        public ICollection<DesignItem> Seats { get; set; }=new List<DesignItem>();
 
     }
 }

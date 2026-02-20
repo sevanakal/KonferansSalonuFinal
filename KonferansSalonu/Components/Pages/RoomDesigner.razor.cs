@@ -29,7 +29,7 @@ namespace KonferansSalonu.Components.Pages
         // Şu an sürüklenen veya seçilen eşya
         DesignItem? SelectedItem;
         DesignItem? _clipboardItem;
-        
+
 
         // Sürükleme durumu
         bool isDragging = false;
@@ -44,13 +44,15 @@ namespace KonferansSalonu.Components.Pages
 
         bool dragPanControl = true; //Sürükleme ve Pan işlem kontrolü
 
-        string SeatGroupColor= "#000000"; // Yeni grup için varsayılan renk
+        string SeatGroupColor = "#000000"; // Yeni grup için varsayılan renk
 
         //Selectionbox
         SelectionBox selectionBox = new SelectionBox();
 
         //Eklene Seat Grupları
         public List<SeatGroupDto> SeatGroups = new List<SeatGroupDto>();
+
+        public SeatGroupDto NewSeatGroup = new SeatGroupDto ();
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
@@ -453,6 +455,32 @@ namespace KonferansSalonu.Components.Pages
                     }
                 }
                 
+            }
+        }
+
+        async Task AddSeatGroupView()
+        {
+            if (String.IsNullOrEmpty(NewSeatGroup.Name))
+            {
+                await ClientUiService.ShowError("Grup adı girmediniz!");
+            }else if (SelectedDesignItems.Count() == 0)
+            {
+                await ClientUiService.ShowError("Lütfen önce seçim yapınız!");
+            }else if(NewSeatGroup.Color=="Rengini Seç:" || String.IsNullOrEmpty(NewSeatGroup.Color))
+            {
+                await ClientUiService.ShowError("Grup rengini belirlemediniz!");
+            }
+            else
+            {
+                SeatGroupDto AddadSeatGroup = new SeatGroupDto();
+                AddadSeatGroup.Name = NewSeatGroup.Name;
+                AddadSeatGroup.Color = NewSeatGroup.Color;
+                AddadSeatGroup.Seats = SelectedDesignItems;
+                SeatGroups.Add(AddadSeatGroup);
+                SelectedDesignItems.ForEach(x => x.SeatGroupId = NewSeatGroup.id);
+                SelectedDesignItems.ForEach(x => x.Color = NewSeatGroup.Color);
+                SelectedDesignItems.Clear();
+                NewSeatGroup = new SeatGroupDto();
             }
         }
 

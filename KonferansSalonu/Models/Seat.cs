@@ -34,7 +34,7 @@ public partial class Seat
 
     public int? Scalepercentage { get; set; }
 
-    public sbyte? Isresize { get; set; }
+    public int Isresize { get; set; }
 
     public virtual Seatgroup? Seatgroup { get; set; }
 }

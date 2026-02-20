@@ -3,7 +3,7 @@
     public class DesignItem
     {
         public string Id { get; set; } = Guid.NewGuid().ToString();
-        public string SeatGroupId { get; set; } = null;
+        public Guid SeatGroupId { get; set; }
         public string Type { get; set; }
         public double X { get; set; }
         public double Y { get; set; }

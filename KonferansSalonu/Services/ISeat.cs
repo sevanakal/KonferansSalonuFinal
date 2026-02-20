@@ -4,7 +4,7 @@ namespace KonferansSalonu.Services
 {
     public class ISeat : ISeatService
     {
-        private readonly KonferencedbContext _context;
+        private readonly ConferencedbContext _context;
 
         public ISeat(ConferencedbContext context)
         {
@@ -20,21 +20,21 @@ namespace KonferansSalonu.Services
 
             var newSeat = new Seat
             {
-                SeatGroupId = seat.SeatGroupId,
                 Type = seat.Type,
                 X = seat.X,
                 Y = seat.Y,
                 Label = seat.Label,
-                DefaultWidth = seat.DefaultWidth,
-                DefaultHeight = seat.DefaultHeight,
+                Defaultwidth = seat.DefaultWidth,
+                Defaultheight = seat.DefaultHeight,
                 Width = seat.Width,
                 Height = seat.Height,
-                ScalePercentage = seat.ScalePercentage,
-                IsResize = seat.IsResize,
-                IsSelected = seat.IsSelected,
-                Rotation = seat.Rotation,
-                Color = seat.Color
+                Scalepercentage = seat.ScalePercentage,
+                Isresize = seat.IsResize ? 1 : 0,
+                Rotation = seat.Rotation
             };
+            _context.Seats.Add(newSeat);
+            await _context.SaveChangesAsync();
+            return true;
         }
     }
 }
