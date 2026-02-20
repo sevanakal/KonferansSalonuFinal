@@ -20,8 +20,6 @@ public partial class ConferencedbContext : DbContext
 
     public virtual DbSet<Culture> Cultures { get; set; }
 
-    public virtual DbSet<Efmigrationshistory> Efmigrationshistories { get; set; }
-
     public virtual DbSet<Languagekey> Languagekeys { get; set; }
 
     public virtual DbSet<Passwordresettoken> Passwordresettokens { get; set; }
@@ -87,16 +85,6 @@ public partial class ConferencedbContext : DbContext
             entity.Property(e => e.Name)
                 .HasMaxLength(50)
                 .HasColumnName("name");
-        });
-
-        modelBuilder.Entity<Efmigrationshistory>(entity =>
-        {
-            entity.HasKey(e => e.MigrationId).HasName("PRIMARY");
-
-            entity.ToTable("__efmigrationshistory");
-
-            entity.Property(e => e.MigrationId).HasMaxLength(150);
-            entity.Property(e => e.ProductVersion).HasMaxLength(32);
         });
 
         modelBuilder.Entity<Languagekey>(entity =>
