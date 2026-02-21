@@ -304,8 +304,44 @@ namespace KonferansSalonu.Components.Pages
 
         void DeleteItem()
         {
-            if (SelectedItem != null)
+            // Çoklu seçim varsaepsini sil
+            if (SelectedDesignItems.Any())
             {
+
+                foreach (var item in SelectedDesignItems)
+                {
+                    // 1. Eğer bir gruba aitse, direkt o grubu bul
+                    if (item.SeatGroupId != Guid.Empty)
+                    {
+                        var targetGroup = SeatGroups.FirstOrDefault(g => g.id == item.SeatGroupId);
+                        if (targetGroup != null)
+                        {
+                            // 2. O grubun içinden bu koltuğu uçur
+                            var seatToRemove = targetGroup.Seats.FirstOrDefault(s => s.Id == item.Id);
+                            if (seatToRemove != null)
+                            {
+                                targetGroup.Seats.Remove(seatToRemove);
+                            }
+                        }
+                    }
+
+                    // 3. Sahneden (Canvas) uçur
+                    DesignItems.Remove(item);
+                }
+                SelectedDesignItems.Clear(); // Seçim listesini boşalt
+                SelectedItem = null;
+            }
+            // Sadece tekil tıklanmış bir şey varsa
+            else if (SelectedItem != null)
+            {
+                foreach (var _seatGroup in SeatGroups)
+                {
+                    var _seat = _seatGroup.Seats.FirstOrDefault(x => x.Id == SelectedItem.Id);
+                    if (_seat != null)
+                    {
+                        _seatGroup.Seats.Remove(_seat);
+                    }
+                }
                 DesignItems.Remove(SelectedItem);
                 SelectedItem = null;
             }
@@ -498,9 +534,7 @@ namespace KonferansSalonu.Components.Pages
                     DesignItem addedItem;
                     foreach (var item in SelectedDesignItems)
                     {
-                        addedItem = new DesignItem();
-                        addedItem = item;
-                        AddedSeatGroup.Seats.Add(addedItem);
+                        AddedSeatGroup.Seats.Add(item); // Zaten referans taşıdığımız için direkt ekliyoruz
                     }
                     addedItem = new DesignItem();
                     SeatGroups.Add(AddedSeatGroup);
