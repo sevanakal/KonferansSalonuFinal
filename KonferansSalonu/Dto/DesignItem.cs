@@ -19,5 +19,7 @@
 
         public string Color { get; set; }
 
+        public string PreColor { get; set; }
+
     }
 }

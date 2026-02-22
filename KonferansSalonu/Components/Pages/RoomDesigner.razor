@@ -175,8 +175,25 @@
                         <option value="yellow">Sarı</option>
                     </select>
                 </div>
+
+                @if (SeatGroups.Count() > 0)
+                {
+                <div class="mb-3">
+                    <label class="form-label small">Eklenmiş Gruplar</label>
+                    <select class="form-select" @bind="NewSeatGroup.Name" @bind:after="OnColorChangeCreatadGroup">
+                        <option value="">Grup Seç</option>
+                        @foreach (var item in SeatGroups)
+                            {
+                                <option value="@item.Name" style="background-color:@item.Color">@item.Name</option>
+                            }
+                    </select>
+                </div>
+                }
                 <button class="btn btn-primary w-100 mt-3" @onclick="AddSeatGroupView">
                     <i class="bi bi-database-add me-2"></i> Ekle
+                </button>
+                <button class="btn btn-warning w-100 mt-3" @onclick="ExcludeDesignItem">
+                    <i class="bi bi-eject-fill me-2"></i> Gruptan çıkar!
                 </button>
             </div>
         }

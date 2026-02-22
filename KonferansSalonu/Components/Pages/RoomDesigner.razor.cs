@@ -261,11 +261,24 @@ namespace KonferansSalonu.Components.Pages
                 {
                     if(SelectedDesignItems.Count() > 0)
                     {
-                        //SelectedDesignItems.ForEach(x => x.Color = null);
-                        //SeatGroupColor = "";
+                        foreach (var item in SelectedDesignItems.Where(x => x.SeatGroupId == Guid.Empty).ToList())
+                        {
+                            item.Color = "";
+                        }
+                        
+                        foreach (var item in SelectedDesignItems)
+                        {
+                            if (item.Color != item.PreColor)
+                            {
+                                item.Color = item.PreColor;
+                            }
+                        }
+                        NewSeatGroup.Name = "";
+                        NewSeatGroup.Color = "";
+                        SelectedDesignItems = new List<DesignItem>();
+                        DesignItems.ForEach(x => x.IsSelected = false);
                     }
-                    SelectedDesignItems = new List<DesignItem>();
-                    DesignItems.ForEach(x => x.IsSelected = false);
+                    
                     rect = await JSRuntime.InvokeAsync<BoundingRect>("getElementBoundingClient", "designer-canvas");
                     if (rect == null) return;
 
@@ -468,18 +481,37 @@ namespace KonferansSalonu.Components.Pages
 
         async Task OnColorChange() {
             // Seçili eşyalardan herhangi birinin SeatGroupId'si atanmış mı? (Guid.Empty değilse atanmıştır)
-            bool isAlreadyGrouped = SelectedDesignItems.Any(x => x.SeatGroupId != Guid.Empty);
+            //bool isAlreadyGrouped = SelectedDesignItems.Any(x => x.SeatGroupId != Guid.Empty);
 
-            if (isAlreadyGrouped)
-            {
-                await ClientUiService.ShowError("Dikkat!!! Seçtiğiniz nesnelerden biri veya birkaçı daha önce başka grupta tanımlanmış.");
-                return; // İşlemi kes
-            }
+            //if (isAlreadyGrouped)
+            //{
+            //    await ClientUiService.ShowError("Dikkat!!! Seçtiğiniz nesnelerden biri veya birkaçı daha önce başka grupta tanımlanmış.");
+            //    return; // İşlemi kes
+           // }
 
             // Sorun yoksa rengi daya!
             foreach (var item in SelectedDesignItems)
             {
                 item.Color = NewSeatGroup.Color;
+            }
+        }
+        async Task OnColorChangeCreatadGroup()
+        {
+            // Seçili eşyalardan herhangi birinin SeatGroupId'si atanmış mı? (Guid.Empty değilse atanmıştır)
+            //bool isAlreadyGrouped = SelectedDesignItems.Any(x => x.SeatGroupId != Guid.Empty);
+
+            //if (isAlreadyGrouped)
+            //{
+            //    await ClientUiService.ShowError("Dikkat!!! Seçtiğiniz nesnelerden biri veya birkaçı daha önce başka grupta tanımlanmış.");
+            //    return; // İşlemi kes
+            // }
+
+            // Sorun yoksa rengi daya!
+            var color = SeatGroups.FirstOrDefault(x => x.Name == NewSeatGroup.Name).Color;
+            NewSeatGroup.Color = color;
+            foreach (var item in SelectedDesignItems)
+            {
+                item.Color = color;
             }
         }
 
@@ -522,34 +554,69 @@ namespace KonferansSalonu.Components.Pages
             }
             else
             {
-                var hasSeatGroup = SeatGroups.FirstOrDefault(x => x.Name == NewSeatGroup.Name);
-                
-                
-                
-                if (hasSeatGroup == null)
+
+                var hasSeatGroup = SeatGroups.FirstOrDefault(x => x.Name == NewSeatGroup.Name );
+
+                if (hasSeatGroup != null)
                 {
-                    SeatGroupDto AddedSeatGroup = new SeatGroupDto();
-                    AddedSeatGroup.Name = NewSeatGroup.Name;
-                    AddedSeatGroup.Color = NewSeatGroup.Color;
-                    DesignItem addedItem;
-                    foreach (var item in SelectedDesignItems)
+                    if (hasSeatGroup.Color!=NewSeatGroup.Color)
+                    {
+                        await ClientUiService.ShowError("Eklemek istediğiniz grup başka bir renk seçimi ile oluşturulmuş!");
+                        return;
+                    }
+                }
+
+                //if (hasSeatGroup == null)
+                //{
+                SeatGroupDto AddedSeatGroup = new SeatGroupDto();
+                AddedSeatGroup.Name = NewSeatGroup.Name;
+                AddedSeatGroup.Color = NewSeatGroup.Color;
+                DesignItem addedItem;
+                foreach (var item in SelectedDesignItems)
+                {
+                    if (SeatGroups.Count() > 0)
+                    {
+                        foreach (var _group in SeatGroups)
+                        {
+                            var _seatControl = _group.Seats.FirstOrDefault(x => x.Id == item.Id);
+                            if (_seatControl != null)
+                            {
+                                _seatControl.SeatGroupId = Guid.Empty;
+                                _group.Seats.Remove(_seatControl);
+                            }
+                        }
+                    }
+
+                    item.PreColor = item.Color;
+                    if (hasSeatGroup == null)
                     {
                         AddedSeatGroup.Seats.Add(item); // Zaten referans taşıdığımız için direkt ekliyoruz
                     }
-                    addedItem = new DesignItem();
-                    SeatGroups.Add(AddedSeatGroup);
-                    SelectedDesignItems.ForEach(x => x.SeatGroupId = AddedSeatGroup.id);
-                    SelectedDesignItems.ForEach(x => x.Color = NewSeatGroup.Color);
-                    SelectedDesignItems.Clear();
-                    DesignItems.ForEach(x => x.IsSelected = false);
-                    NewSeatGroup = new SeatGroupDto();
-                    StateHasChanged();
+                    else
+                    {
+                        hasSeatGroup.Seats.Add(item);
+                    }
+
                 }
-                else
+                addedItem = new DesignItem();
+                if (hasSeatGroup == null)
                 {
-                    await ClientUiService.ShowError("Bu grup ismini daha önce kullandınız!");
+                    SeatGroups.Add(AddedSeatGroup);
                 }
-                
+
+                SelectedDesignItems.ForEach(x => x.SeatGroupId = AddedSeatGroup.id);
+                SelectedDesignItems.ForEach(x => x.Color = NewSeatGroup.Color);
+                SelectedDesignItems.Clear();
+                DesignItems.ForEach(x => x.IsSelected = false);
+                NewSeatGroup = new SeatGroupDto();
+                //StateHasChanged();
+                //}
+                /*else
+                {
+                    //await ClientUiService.ShowError("Bu grup ismini daha önce kullandınız!");
+                    
+                }*/
+
             }
         }
 
@@ -585,6 +652,23 @@ namespace KonferansSalonu.Components.Pages
                         SelectedItem.SeatGroupId = Guid.Empty;
                         SelectedItem.Color = "";
                     }
+                }
+                if (SelectedDesignItems.Count() > 0)
+                {
+                    SelectedDesignItems.ForEach(x => x.Color = "");
+                    foreach (var _seat in SelectedDesignItems)
+                    {
+                        foreach (var _group in SeatGroups)
+                        {
+                            var removeSeat = _group.Seats.FirstOrDefault(x => x.Id == _seat.Id);
+                            if (removeSeat!=null)
+                            {
+                                _group.Seats.Remove(removeSeat);
+                            }
+                        }
+                    }
+                    SelectedDesignItems.ForEach(x => x.SeatGroupId = Guid.Empty);
+                    SelectedDesignItems.Clear();
                 }
             }
             
