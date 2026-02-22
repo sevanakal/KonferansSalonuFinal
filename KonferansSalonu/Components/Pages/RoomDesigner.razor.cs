@@ -566,6 +566,8 @@ namespace KonferansSalonu.Components.Pages
                     }
                 }
 
+                
+
                 //if (hasSeatGroup == null)
                 //{
                 SeatGroupDto AddedSeatGroup = new SeatGroupDto();
@@ -590,10 +592,14 @@ namespace KonferansSalonu.Components.Pages
                     item.PreColor = item.Color;
                     if (hasSeatGroup == null)
                     {
+                        item.Color = NewSeatGroup.Color;
+                        item.SeatGroupId = AddedSeatGroup.id;
                         AddedSeatGroup.Seats.Add(item); // Zaten referans taşıdığımız için direkt ekliyoruz
                     }
                     else
                     {
+                        item.Color = hasSeatGroup.Color;
+                        item.SeatGroupId = hasSeatGroup.id;
                         hasSeatGroup.Seats.Add(item);
                     }
 
@@ -604,9 +610,7 @@ namespace KonferansSalonu.Components.Pages
                     SeatGroups.Add(AddedSeatGroup);
                 }
 
-                SelectedDesignItems.ForEach(x => x.SeatGroupId = AddedSeatGroup.id);
-                SelectedDesignItems.ForEach(x => x.Color = NewSeatGroup.Color);
-                SelectedDesignItems.Clear();
+                
                 DesignItems.ForEach(x => x.IsSelected = false);
                 NewSeatGroup = new SeatGroupDto();
                 //StateHasChanged();
@@ -638,6 +642,17 @@ namespace KonferansSalonu.Components.Pages
             }
         }
 
+        async Task SelectSeatGroup(SeatGroupDto _SeatGroup)
+        {
+            DesignItems.ForEach(x => x.IsSelected = false);
+            DesignItems.Where(x => x.SeatGroupId == _SeatGroup.id).ToList().ForEach(x => x.IsSelected = true);
+            var list = DesignItems.Where(x => x.SeatGroupId == _SeatGroup.id).ToList();
+            foreach (var item in list)
+            {
+                SelectedDesignItems.Add(item);
+            }
+        }
+
         async Task ExcludeDesignItem()
         {
             if(await ClientUiService.ConfirmDelete("Seçili objeyi gruptan çıkarmak istediğinize emin miziniz?"))
@@ -651,23 +666,31 @@ namespace KonferansSalonu.Components.Pages
                         group.Seats.Remove(seat);
                         SelectedItem.SeatGroupId = Guid.Empty;
                         SelectedItem.Color = "";
+                        SelectedItem.PreColor = "";
                     }
                 }
                 if (SelectedDesignItems.Count() > 0)
                 {
-                    SelectedDesignItems.ForEach(x => x.Color = "");
+                    
                     foreach (var _seat in SelectedDesignItems)
                     {
-                        foreach (var _group in SeatGroups)
+                        // Sadece koltuğun ait olduğu grubu bul! Bütün grupları dönme.
+                        if (_seat.SeatGroupId != Guid.Empty)
                         {
-                            var removeSeat = _group.Seats.FirstOrDefault(x => x.Id == _seat.Id);
-                            if (removeSeat!=null)
+                            var targetGroup = SeatGroups.FirstOrDefault(g => g.id == _seat.SeatGroupId);
+                            if (targetGroup != null)
                             {
-                                _group.Seats.Remove(removeSeat);
+                                var removeSeat = targetGroup.Seats.FirstOrDefault(x => x.Id == _seat.Id);
+                                if (removeSeat != null)
+                                {
+                                    targetGroup.Seats.Remove(removeSeat);
+                                }
                             }
                         }
                     }
-                    SelectedDesignItems.ForEach(x => x.SeatGroupId = Guid.Empty);
+                    SelectedDesignItems.ForEach(x => x.Color = "");
+                    SelectedDesignItems.ForEach(x => x.PreColor = "");
+                    SelectedDesignItems.ForEach(x => x.IsSelected = false);
                     SelectedDesignItems.Clear();
                 }
             }

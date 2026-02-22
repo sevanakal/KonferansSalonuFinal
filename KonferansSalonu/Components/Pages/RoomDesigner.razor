@@ -207,9 +207,12 @@
                     <ul class="dropdown-menu w-100 shadow">
                         @foreach (var item in SeatGroups)
                         {
+                            
                             <li style="background-color:@item.Color">
-                                <a @onclick="()=>DeleteSeatGroupView(item)" class="dropdown-item d-flex justify-content-between align-items-center">
+                                <a class="dropdown-item d-flex justify-content-between align-items-center">
                                     <span class="text-light">@item.Name</span>
+                                    <span class="badge bg-body-secondary text-dark" style="cursor:crosshair" @onclick="()=>SelectSeatGroup(item)">Sec</span>
+                                    <span class="badge bg-danger text-dark" style="cursor:crosshair" @onclick="() => DeleteSeatGroupView(item)">Sil</span>
                                     <span class="badge bg-light text-dark">@item.Seats.Count() Kapasite</span>
                                 </a>
                             </li>
