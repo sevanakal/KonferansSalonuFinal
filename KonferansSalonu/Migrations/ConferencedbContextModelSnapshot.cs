@@ -201,8 +201,11 @@ namespace KonferansSalonu.Migrations
             modelBuilder.Entity("KonferansSalonu.Models.Seat", b =>
                 {
                     b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int?>("Defaultheight")
                         .ValueGeneratedOnAdd()

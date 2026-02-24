@@ -47,6 +47,8 @@ namespace KonferansSalonu.Services
                 _context.Seatgroups.RemoveRange(oldGroups);
                 await _context.SaveChangesAsync();
 
+                _context.ChangeTracker.Clear();
+
                 var newSeatGroups = new List<Seatgroup>();
                 var newSeats = new List<Seat>();
 
@@ -56,25 +58,45 @@ namespace KonferansSalonu.Services
                     {
                         Sectionid = sectionId,
                         Name = group.Name,
-                        Color = group.Color
+                        Color = group.Color,
+                        Seats = new List<Seat>()
                     };
+                    var itemsInGroup = designItem.Where(d => d.SeatGroupId == group.id).ToList();
+                    foreach (var seatItems in itemsInGroup) {
+                        newGroup.Seats.Add(MaptToSeatEntity(seatItems));
+                    }
+                    newSeatGroups.Add(newGroup);
+
+                    await _context.Seatgroups.AddRangeAsync(newSeatGroups);
+                    await _context.SaveChangesAsync();
+
+                    await transaction.CommitAsync();
+                    return true;
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
-                throw;
+                await transaction.RollbackAsync();
+                throw new Exception("Veritabanı kayıt işlemi sırasında kritik bir hata oluştu ve işlemler geri alındı: " + ex.Message);
             }
             return false;
         }
 
-        private Seat MaptToSeatEntity(DesignItem designItem, int seatGroupId)
+        private Seat MaptToSeatEntity(DesignItem designItem)
         {
             return new Seat
             {
-                
-                
-                
+                Label = designItem.Label,
+                Type = designItem.Type,
+                X = designItem.X,
+                Y = designItem.Y,
+                Rotation = designItem.Rotation,
+                Defaultwidth = designItem.DefaultWidth,
+                Defaultheight = designItem.DefaultHeight,
+                Width = designItem.Width,
+                Height = designItem.Height,
+                Scalepercentage = designItem.ScalePercentage,
+                Isresize = designItem.IsResize ? 1 : 0
             };
         }
     }

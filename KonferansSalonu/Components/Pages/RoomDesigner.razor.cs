@@ -13,6 +13,7 @@ namespace KonferansSalonu.Components.Pages
     public partial class RoomDesigner
     {
         [Inject] public IRoomService RoomService { get; set; }
+        [Inject] public ISeatGroupService SeatGroupService { get; set; }
         [Inject] public NavigationManager NavManager { get; set; }
         [Inject] public IJSRuntime JSRuntime { get; set; }
         [Inject] public IClientUiService ClientUiService { get; set; }
@@ -533,7 +534,13 @@ namespace KonferansSalonu.Components.Pages
                     // Tüm kontrolleri geçtik, kullanıcıya tasarım verilerini kaydetmek isteyip istemediğini soralım
                     if (await ClientUiService.ConfirmDelete("Tasarım verilerini kaydetmek istiyor musunuz"))
                     {
-
+                        if (await SeatGroupService.SaveSeatGroupDesign(SectionId, DesignItems, SeatGroups))
+                        {
+                            await ClientUiService.ShowSuccess("Tasarım verileri başarıyla kaydedildi!");
+                        }
+                        else { 
+                            await ClientUiService.ShowError("Tasarım verileri kaydedilirken bir hata oluştu!");
+                        }
                     }
                 }
                 

@@ -20,6 +20,8 @@ builder.Services.AddScoped<IClientUiService, ClientUiService>();
 
 builder.Services.AddScoped<ISectionService, SectionService>();
 
+builder.Services.AddScoped<ISeatGroupService, ISeatGroup>();
+
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();

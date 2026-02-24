@@ -164,7 +164,6 @@ public partial class ConferencedbContext : DbContext
             entity.HasIndex(e => e.Seatgroupid, "seats_ibfk_1");
 
             entity.Property(e => e.Id)
-                .ValueGeneratedNever()
                 .HasColumnName("id");
             entity.Property(e => e.Defaultheight)
                 .HasDefaultValueSql("'40'")

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace KonferansSalonu.Migrations
 {
     [DbContext(typeof(ConferencedbContext))]
-    [Migration("20260220230845_InitialCatalogue")]
-    partial class InitialCatalogue
+    [Migration("20260224213444_InitialCleanSetup")]
+    partial class InitialCleanSetup
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -204,8 +204,11 @@ namespace KonferansSalonu.Migrations
             modelBuilder.Entity("KonferansSalonu.Models.Seat", b =>
                 {
                     b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int?>("Defaultheight")
                         .ValueGeneratedOnAdd()
