@@ -11,6 +11,7 @@ public partial class Seat
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
 
+    public int Sectionid { get; set; }  
     public int? Seatgroupid { get; set; }
 
     public string Label { get; set; } = null!;

@@ -525,7 +525,7 @@ namespace KonferansSalonu.Components.Pages
             else
             {
                 // Tasarım verilerinde grup ataması yapılmamış yerler var mı kontrol edelim
-                if (DesignItems.Any(x => x.SeatGroupId == Guid.Empty))
+                if (DesignItems.Where(x=>x.Type== "armchair" || x.Type== "chair").Any(x => x.SeatGroupId == Guid.Empty))
                 {
                     await ClientUiService.ShowError("Gruplandırması yapılmayan yerler var.");
                 }

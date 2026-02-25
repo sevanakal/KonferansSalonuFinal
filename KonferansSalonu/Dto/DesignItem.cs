@@ -3,6 +3,8 @@
     public class DesignItem
     {
         public string Id { get; set; } = Guid.NewGuid().ToString();
+
+        public int SectionId { get; set; } = 0;  
         public Guid? SeatGroupId { get; set; } = Guid.Empty;
         public string Type { get; set; }
         public double X { get; set; }

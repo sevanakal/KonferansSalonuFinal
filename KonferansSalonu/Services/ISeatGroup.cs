@@ -63,7 +63,7 @@ namespace KonferansSalonu.Services
                     };
                     var itemsInGroup = designItem.Where(d => d.SeatGroupId == group.id).ToList();
                     foreach (var seatItems in itemsInGroup) {
-                        newGroup.Seats.Add(MaptToSeatEntity(seatItems));
+                        newGroup.Seats.Add(MaptToSeatEntity(seatItems, sectionId));
                     }
                     newSeatGroups.Add(newGroup);
 
@@ -82,10 +82,11 @@ namespace KonferansSalonu.Services
             return false;
         }
 
-        private Seat MaptToSeatEntity(DesignItem designItem)
+        private Seat MaptToSeatEntity(DesignItem designItem, int sectionID)
         {
             return new Seat
             {
+                Sectionid = sectionID,
                 Label = designItem.Label,
                 Type = designItem.Type,
                 X = designItem.X,
