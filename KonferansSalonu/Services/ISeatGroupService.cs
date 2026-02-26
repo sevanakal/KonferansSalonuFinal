@@ -7,5 +7,7 @@ namespace KonferansSalonu.Services
         Task<bool> CreateSeatGroup(SeatGroupDto seatGroup);
 
         Task<bool> SaveSeatGroupDesign(int sectionId, List<DesignItem> designItem, List<SeatGroupDto> seatGroupDto);
+
+        Task<List<SeatGroupDto>> ListSeatGroupDesign(int sectionId);
     }
 }

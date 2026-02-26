@@ -43,6 +43,8 @@ namespace KonferansSalonu.Services
 
                 var oldSeats = oldGroups.SelectMany(g => g.Seats).ToList();
 
+                
+
                 _context.Seats.RemoveRange(oldSeats);
                 _context.Seatgroups.RemoveRange(oldGroups);
                 await _context.SaveChangesAsync();
@@ -68,11 +70,18 @@ namespace KonferansSalonu.Services
                     newSeatGroups.Add(newGroup);
 
                     await _context.Seatgroups.AddRangeAsync(newSeatGroups);
-                    await _context.SaveChangesAsync();
+                    
 
-                    await transaction.CommitAsync();
-                    return true;
+                    
                 }
+                var nonSeatItems = designItem.Where(d => d.SeatGroupId == Guid.Empty).ToList();
+                foreach (var item in nonSeatItems)
+                {
+                    _context.Seats.Add(MaptToSeatEntity(item, sectionId));
+                }
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return true;
             }
             catch (Exception ex)
             {
