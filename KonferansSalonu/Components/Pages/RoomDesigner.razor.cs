@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Transactions;
 using System.Threading.Tasks.Dataflow;
 using System.Diagnostics.Eventing.Reader;
+using System.Xml.Serialization;
 
 namespace KonferansSalonu.Components.Pages
 {
@@ -59,6 +60,10 @@ namespace KonferansSalonu.Components.Pages
 
         bool hasSeat = false; //Nesne eğer daha önce başka bir yerde gruba atandıysa
 
+        protected override async Task OnInitializedAsync()
+        {
+            await LoadDesign();
+        }
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
             if (firstRender)
@@ -620,15 +625,15 @@ namespace KonferansSalonu.Components.Pages
                 
                 DesignItems.ForEach(x => x.IsSelected = false);
                 NewSeatGroup = new SeatGroupDto();
-                //StateHasChanged();
-                //}
-                /*else
-                {
-                    //await ClientUiService.ShowError("Bu grup ismini daha önce kullandınız!");
-                    
-                }*/
+                StateHasChanged();
+                
 
             }
+        }
+
+        void AddSeatGroupSection(string name, string color)
+        {
+
         }
 
         async Task DeleteSeatGroupView(SeatGroupDto seatGroupDto)
@@ -705,9 +710,17 @@ namespace KonferansSalonu.Components.Pages
         }
 
         // ViewModel (Geçici Model)
-        
 
 
+        public async Task LoadDesign() {
+            var SeatGroupList = await SeatGroupService.ListSeatGroupDesign(SectionId);
+            if(SeatGroupList.SeatGrpups.Any())
+            {
+                DesignItems = SeatGroupList.SeatGrpups.SelectMany(g => g.Seats).ToList();
+                DesignItems.AddRange(SeatGroupList.Objects);
+                StateHasChanged();
+            }
+        }
         public class SelectionBox
         {
             public double X { get; set; } = 0;

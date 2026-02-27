@@ -91,6 +91,64 @@ namespace KonferansSalonu.Services
             return false;
         }
 
+        public async Task<SeatGroupsAndObject> ListSeatGroupDesign(int sectionId)
+        {
+            var seatGroups = await _context.Seatgroups.Include(g => g.Seats).Where(g => g.Sectionid == sectionId).ToListAsync();
+
+            SeatGroupsAndObject _SeatGroupAndObjects=new SeatGroupsAndObject();
+            List<SeatGroupDto> seatGroupDtosList = new List<SeatGroupDto>();
+            foreach (var group in seatGroups)
+            {
+                var seatGroupDto = MapToSeatGroupDto(group);
+                List<DesignItem> designItems = new List<DesignItem>();
+                foreach (var seat in group.Seats)
+                {
+                    designItems.Add(MapToDesignItem(seat, group.Color));
+                }
+                seatGroupDto.Seats = designItems;
+                seatGroupDtosList.Add(seatGroupDto);
+            }
+
+            
+            _SeatGroupAndObjects.SeatGrpups = seatGroupDtosList;
+
+            var _objects = await _context.Seats.Where(s => s.Sectionid == sectionId && s.Seatgroupid == null).ToListAsync();
+            foreach (var obj in _objects) {
+                _SeatGroupAndObjects.Objects.Add(MapToDesignItem(obj, ""));
+            }
+
+            return _SeatGroupAndObjects;
+        }
+
+        private SeatGroupDto MapToSeatGroupDto(Seatgroup seatGroup)
+        {
+            return new SeatGroupDto
+            {
+                SectionId = seatGroup.Sectionid,
+                Name = seatGroup.Name,
+                Color = seatGroup.Color
+            };
+        }
+
+        private DesignItem MapToDesignItem(Seat seat, string color)
+        {
+            return new DesignItem
+            {
+                Label = seat.Label,
+                Type = seat.Type,
+                X = seat.X,
+                Y = seat.Y,
+                Rotation = seat.Rotation,
+                DefaultWidth = seat.Defaultheight ?? 0,
+                DefaultHeight = seat.Defaultheight ?? 0,
+                Width = seat.Width ?? 0,
+                Height = seat.Height ?? 0,
+                ScalePercentage = seat.Scalepercentage ?? 0,
+                IsResize = seat.Isresize == 1,
+                Color = color
+            };
+        }
+
         private Seat MaptToSeatEntity(DesignItem designItem, int sectionID)
         {
             return new Seat

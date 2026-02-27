@@ -8,6 +8,6 @@ namespace KonferansSalonu.Services
 
         Task<bool> SaveSeatGroupDesign(int sectionId, List<DesignItem> designItem, List<SeatGroupDto> seatGroupDto);
 
-        Task<List<SeatGroupDto>> ListSeatGroupDesign(int sectionId);
+        Task<SeatGroupsAndObject> ListSeatGroupDesign(int sectionId);
     }
 }
