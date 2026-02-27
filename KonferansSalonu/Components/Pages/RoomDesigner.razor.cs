@@ -60,6 +60,8 @@ namespace KonferansSalonu.Components.Pages
 
         bool hasSeat = false; //Nesne eğer daha önce başka bir yerde gruba atandıysa
 
+        int SeatGroupId = 1;
+
         protected override async Task OnInitializedAsync()
         {
             await LoadDesign();
@@ -267,7 +269,7 @@ namespace KonferansSalonu.Components.Pages
                 {
                     if(SelectedDesignItems.Count() > 0)
                     {
-                        foreach (var item in SelectedDesignItems.Where(x => x.SeatGroupId == Guid.Empty).ToList())
+                        foreach (var item in SelectedDesignItems.Where(x => x.SeatGroupId == 0).ToList())
                         {
                             item.Color = "";
                         }
@@ -330,7 +332,7 @@ namespace KonferansSalonu.Components.Pages
                 foreach (var item in SelectedDesignItems)
                 {
                     // 1. Eğer bir gruba aitse, direkt o grubu bul
-                    if (item.SeatGroupId != Guid.Empty)
+                    if (item.SeatGroupId != 0)
                     {
                         var targetGroup = SeatGroups.FirstOrDefault(g => g.id == item.SeatGroupId);
                         if (targetGroup != null)
@@ -530,7 +532,7 @@ namespace KonferansSalonu.Components.Pages
             else
             {
                 // Tasarım verilerinde grup ataması yapılmamış yerler var mı kontrol edelim
-                if (DesignItems.Where(x=>x.Type== "armchair" || x.Type== "chair").Any(x => x.SeatGroupId == Guid.Empty))
+                if (DesignItems.Where(x=>x.Type== "armchair" || x.Type== "chair").Any(x => x.SeatGroupId == 0))
                 {
                     await ClientUiService.ShowError("Gruplandırması yapılmayan yerler var.");
                 }
@@ -589,6 +591,7 @@ namespace KonferansSalonu.Components.Pages
             //if (hasSeatGroup == null)
             //{
             SeatGroupDto AddedSeatGroup = new SeatGroupDto();
+            AddedSeatGroup.id = SeatGroupId++;
             AddedSeatGroup.Name = name;
             AddedSeatGroup.Color = color;
             DesignItem addedItem;
@@ -601,7 +604,7 @@ namespace KonferansSalonu.Components.Pages
                         var _seatControl = _group.Seats.FirstOrDefault(x => x.Id == item.Id);
                         if (_seatControl != null)
                         {
-                            _seatControl.SeatGroupId = Guid.Empty;
+                            _seatControl.SeatGroupId = 0;
                             _group.Seats.Remove(_seatControl);
                         }
                     }
@@ -646,7 +649,7 @@ namespace KonferansSalonu.Components.Pages
                     if (updateSeat!=null)
                     {
                         updateSeat.Color = "";
-                        updateSeat.SeatGroupId = Guid.Empty;
+                        updateSeat.SeatGroupId = 0;
                     }
                 }
                 SeatGroups.Remove(seatGroupDto);
@@ -675,7 +678,7 @@ namespace KonferansSalonu.Components.Pages
                     if (group != null && seat != null)
                     {
                         group.Seats.Remove(seat);
-                        SelectedItem.SeatGroupId = Guid.Empty;
+                        SelectedItem.SeatGroupId = 0;
                         SelectedItem.Color = "";
                         SelectedItem.PreColor = "";
                     }
@@ -686,7 +689,7 @@ namespace KonferansSalonu.Components.Pages
                     foreach (var _seat in SelectedDesignItems)
                     {
                         // Sadece koltuğun ait olduğu grubu bul! Bütün grupları dönme.
-                        if (_seat.SeatGroupId != Guid.Empty)
+                        if (_seat.SeatGroupId != 0)
                         {
                             var targetGroup = SeatGroups.FirstOrDefault(g => g.id == _seat.SeatGroupId);
                             if (targetGroup != null)
@@ -717,10 +720,14 @@ namespace KonferansSalonu.Components.Pages
             {
                 DesignItems = SeatGroupList.SeatGrpups.SelectMany(g => g.Seats).ToList();
                 DesignItems.AddRange(SeatGroupList.Objects);
-                foreach (var _SeatGroup in SeatGroupList.SeatGrpups) {
-                    SeatGroups.Add(new SeatGroupDto { 
+                foreach (var _SeatGroup in SeatGroupList.SeatGrpups) 
+                {
+                    SeatGroups.Add(new SeatGroupDto
+                    {
+                        id = _SeatGroup.id,
                         Name = _SeatGroup.Name,
-                        Color = _SeatGroup.Color
+                        Color = _SeatGroup.Color,
+                        Seats = DesignItems.Where(d => d.SeatGroupId == _SeatGroup.id).ToList()
                     });
                 }
                 StateHasChanged();

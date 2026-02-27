@@ -74,7 +74,7 @@ namespace KonferansSalonu.Services
 
                     
                 }
-                var nonSeatItems = designItem.Where(d => d.SeatGroupId == Guid.Empty).ToList();
+                var nonSeatItems = designItem.Where(d => d.SeatGroupId == 0).ToList();
                 foreach (var item in nonSeatItems)
                 {
                     _context.Seats.Add(MaptToSeatEntity(item, sectionId));
@@ -124,6 +124,7 @@ namespace KonferansSalonu.Services
         {
             return new SeatGroupDto
             {
+                id= seatGroup.Id,
                 SectionId = seatGroup.Sectionid,
                 Name = seatGroup.Name,
                 Color = seatGroup.Color
@@ -134,6 +135,7 @@ namespace KonferansSalonu.Services
         {
             return new DesignItem
             {
+                SeatGroupId = seat.Seatgroupid,
                 Label = seat.Label,
                 Type = seat.Type,
                 X = seat.X,
@@ -145,7 +147,8 @@ namespace KonferansSalonu.Services
                 Height = seat.Height ?? 0,
                 ScalePercentage = seat.Scalepercentage ?? 0,
                 IsResize = seat.Isresize == 1,
-                Color = color
+                Color = color,
+                PreColor = color,
             };
         }
 

@@ -5,7 +5,7 @@
         public string Id { get; set; } = Guid.NewGuid().ToString();
 
         public int SectionId { get; set; } = 0;  
-        public Guid? SeatGroupId { get; set; } = Guid.Empty;
+        public int? SeatGroupId { get; set; } = 0;
         public string Type { get; set; }
         public double X { get; set; }
         public double Y { get; set; }
