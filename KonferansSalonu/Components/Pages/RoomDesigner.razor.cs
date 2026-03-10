@@ -33,6 +33,7 @@ namespace KonferansSalonu.Components.Pages
         // Şu an sürüklenen veya seçilen eşya
         DesignItem? SelectedItem;
         DesignItem? _clipboardItem;
+        List<DesignItem>? _clipboardListItems;
 
 
         // Sürükleme durumu
@@ -46,7 +47,7 @@ namespace KonferansSalonu.Components.Pages
 
         int gridSize = 20; // Izgara boyutu
 
-        bool dragPanControl = true; //Sürükleme ve Pan işlem kontrolü
+        bool dragPanControl = false; //Sürükleme ve Pan işlem kontrolü
 
         string SeatGroupColor = "#000000"; // Yeni grup için varsayılan renk
 
@@ -202,6 +203,7 @@ namespace KonferansSalonu.Components.Pages
             {
                 if (selectionBox.IsActive)
                 {
+                    SelectedItem = null;
                     double mouseInCanvasX = e.ClientX - rect.X;
                     double mouseInCanvasY = e.ClientY - rect.Y;
 
@@ -384,7 +386,10 @@ namespace KonferansSalonu.Components.Pages
 
         void HandleKeyDown(KeyboardEventArgs e)
         {
-            if (e.CtrlKey && e.Key.ToLower() == "c")
+            if(e.Code=="Space" || e.Key==" ")
+            {
+                dragPanControl = true;
+            }else if (e.CtrlKey && e.Key.ToLower() == "c")
             {
                 if (SelectedItem != null)
                 {
@@ -401,6 +406,27 @@ namespace KonferansSalonu.Components.Pages
                         ScalePercentage = SelectedItem.ScalePercentage
                     };
                 }
+                if (SelectedDesignItems.Count() > 0)
+                {
+                    _clipboardListItems = new List<DesignItem>();
+                    foreach (var item in SelectedDesignItems)
+                    {
+                        _clipboardListItems.Add(new DesignItem
+                        {
+                            Type = item.Type,
+                            Label = GetNextLabel(item.Type),
+                            Rotation = item.Rotation,
+                            IsResize = item.IsResize,
+                            DefaultWidth = item.DefaultWidth,
+                            DefaultHeight = item.DefaultHeight,
+                            Width = item.Width,
+                            Height = item.Height,
+                            ScalePercentage = item.ScalePercentage,
+                            X = item.X,
+                            Y = item.Y
+                        });
+                    }
+                }
             }
 
             if (e.CtrlKey && e.Key.ToLower() == "v")
@@ -415,7 +441,7 @@ namespace KonferansSalonu.Components.Pages
                         X = 150,
                         Y = 150,
                         Rotation = _clipboardItem.Rotation,
-                        IsSelected = true,
+                        IsSelected = false,
                         IsResize = _clipboardItem.IsResize,
                         DefaultWidth = _clipboardItem.DefaultWidth,
                         DefaultHeight = _clipboardItem.DefaultHeight,
@@ -432,10 +458,39 @@ namespace KonferansSalonu.Components.Pages
                         SelectedItem.IsSelected = false;
                     }
                     DesignItems.Add(newItem);
-                    SelectedItem = newItem;
-
-
+                    SelectedItem = null;
+                    _clipboardItem = null;
                 }
+                if (_clipboardListItems != null)
+                {
+                    
+                    if (_clipboardListItems.Any())
+                    {
+                        foreach (var item in _clipboardListItems) 
+                        {
+                            var newItem = new DesignItem {
+                                Type = item.Type,
+                                Label = GetNextLabel(item.Type),
+                                X = item.X,
+                                Y = item.Y + 60,
+                                Rotation = item.Rotation,
+                                IsSelected = true,
+                                IsResize = item.IsResize,
+                                DefaultWidth = item.DefaultWidth,
+                                DefaultHeight = item.DefaultHeight,
+                                Width = item.Width,
+                                Height = item.Height,
+                                ScalePercentage = item.ScalePercentage
+                            };
+                            DesignItems.Add(newItem);
+                        }
+                        DesignItems.ForEach(i => i.IsSelected = false);
+                        _clipboardListItems.Clear();
+                        SelectedDesignItems.Clear();
+                    }
+                }
+                
+
             }
 
             
@@ -449,6 +504,13 @@ namespace KonferansSalonu.Components.Pages
 
         }
 
+        void onHandleKeyUp(KeyboardEventArgs e)
+        {
+            if(e.Code == "Space" || e.Key == " ")
+            {
+                dragPanControl = false;
+            }
+        }
         private bool CheckIntersection(DesignItem item, SelectionBox box)
         {
             //Eşyanın genişlik ve yükseklik değerleri
